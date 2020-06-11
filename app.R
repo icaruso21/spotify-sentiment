@@ -1,3 +1,4 @@
+devtools::install_github("charlie86/spotifyr")
 library(shiny)
 library(spotifyr)
 library(scrobbler)
@@ -5,9 +6,9 @@ library(tidyverse)
 
 users <- read_rds("./user-dat/users.csv")
 
-# username <- "noah14noah"
+# username <- "*****"
 # 
-# my_scrobble <- download_scrobbles(username = username, api_key = "aa4c53e580021591d56faac7166c2e86")
+# my_scrobble <- download_scrobbles(username = username, api_key = "**********")
 # 
 # saveRDS(my_scrobble, str_c("./user-dat/", username, ".csv"))
 
@@ -44,8 +45,6 @@ getUIDS <- function(scrobbleDF){
     
     return(scrobbleDF)
 }
-
-
 
 
 access_token <- get_spotify_access_token()
