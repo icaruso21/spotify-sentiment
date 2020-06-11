@@ -3,12 +3,13 @@ library(shiny)
 library(spotifyr)
 library(scrobbler)
 library(tidyverse)
-
+Sys.setenv(SPOTIFY_CLIENT_ID = 'd10f22009457487a928938e03a50ea8e')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = 'f25f59887be94932b99b5ca84f48b772')
 users <- read_rds("./user-dat/users.csv")
 
-# username <- "*****"
+# username <- "noah14noah"
 # 
-# my_scrobble <- download_scrobbles(username = username, api_key = "**********")
+# my_scrobble <- download_scrobbles(username = username, api_key = "aa4c53e580021591d56faac7166c2e86")
 # 
 # saveRDS(my_scrobble, str_c("./user-dat/", username, ".csv"))
 
@@ -20,8 +21,8 @@ getTrackUID <- function(songInfo){
     theTrack <- as.data.frame(search_spotify(songString, type = "track")) %>% 
         dplyr::select(artists, id, name) %>% 
         rename(UID = id, song_name = name) %>% 
-        unchop(cols = artists) #%>% 
-        dplyr::select(song_name, name, UID) #%>% 
+        unnest(cols = artists, keep_empty = FALSE) %>% 
+        dplyr::select(song_name, name, UID) %>% 
         filter(tolower(artistString) == tolower(name)) %>% 
         filter(tolower(songString)== tolower(song_name))
         
@@ -38,7 +39,7 @@ getUIDS <- function(scrobbleDF){
         ungroup
     
     makeUnique <- makeUnique %>% 
-        dplyr::mutate(UID = map(X, getTrackUID)) %>% 
+        dplyr::mutate(UID = map(X, getTrackUID)) #%>% 
         unnest(cols = c(X, UID)) 
     print("so close")
     scrobbleDF <- left_join(scrobbleDF, makeUnique, by = c("song_title" = "song_title", "artist" = "artist"))
@@ -46,8 +47,8 @@ getUIDS <- function(scrobbleDF){
     return(scrobbleDF)
 }
 
-
 access_token <- get_spotify_access_token()
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -91,7 +92,7 @@ server <- function(input, output) {
             saveRDS(users, "./user-dat/users.csv")
         }else{
             last_scrobble <- read_rds(str_c("./user-dat/", username, ".csv"))
-            my_scrobble <- update_scrobbles(last_scrobble,
+            scrobble_UID <- update_scrobbles(last_scrobble,
                              "date_unix",
                              username,
                              key) %>% 
