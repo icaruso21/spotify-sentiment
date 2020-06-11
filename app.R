@@ -3,13 +3,13 @@ library(shiny)
 library(spotifyr)
 library(scrobbler)
 library(tidyverse)
-Sys.setenv(SPOTIFY_CLIENT_ID = 'd10f22009457487a928938e03a50ea8e')
-Sys.setenv(SPOTIFY_CLIENT_SECRET = 'f25f59887be94932b99b5ca84f48b772')
+Sys.setenv(SPOTIFY_CLIENT_ID = '*************************')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = '*************************')
 users <- read_rds("./user-dat/users.csv")
 
 # username <- "noah14noah"
 # 
-# my_scrobble <- download_scrobbles(username = username, api_key = "aa4c53e580021591d56faac7166c2e86")
+# my_scrobble <- download_scrobbles(username = username, api_key = "*************************")
 # 
 # saveRDS(my_scrobble, str_c("./user-dat/", username, ".csv"))
 
