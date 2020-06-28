@@ -1,8 +1,14 @@
+<<<<<<< HEAD
 library(shiny) 
+=======
+devtools::install_github("charlie86/spotifyr")
+library(shiny)
+>>>>>>> fd1db4fd2e1147033b8ab7b706509c037a5f6fb7
 library(spotifyr)
 library(scrobbler)
 library(tidyverse)
-
+Sys.setenv(SPOTIFY_CLIENT_ID = '*************************')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = '*************************')
 users <- read_rds("./user-dat/users.csv")
 
 #Sys.setenv(SPOTIFY_CLIENT_ID = 'xxxxxxxxxxxxxxxxxxxxx')
@@ -12,7 +18,11 @@ access_token <- get_spotify_access_token()
 
 #username <- "***************"
 # 
+<<<<<<< HEAD
  #my_scrobble <- download_scrobbles(username = username, api_key = "*****************")
+=======
+# my_scrobble <- download_scrobbles(username = username, api_key = "*************************")
+>>>>>>> fd1db4fd2e1147033b8ab7b706509c037a5f6fb7
 # 
 # saveRDS(my_scrobble, str_c("./user-dat/", username, ".csv"))
 
@@ -22,6 +32,7 @@ getTrackUID <- function(song_title, artist){
     # songString <- songInfo$song_title
     # artistString <- songInfo$artist
     #print(str_c(song_title, artist))
+<<<<<<< HEAD
     UIDS <- c()
     
     for(i in seq.int(1, length(song_title))){
@@ -47,6 +58,15 @@ getTrackUID <- function(song_title, artist){
     #     dplyr::select(song_name, name, UID) %>% 
     #     filter(tolower(artist[i]) == tolower(name)) %>% 
     #     filter(tolower(song_title[i])== tolower(song_name))
+=======
+    theTrack <- as.data.frame(search_spotify(songString, type = "track")) %>% 
+        dplyr::select(artists, id, name) %>% 
+        rename(UID = id, song_name = name) %>% 
+        unnest(cols = artists, keep_empty = FALSE) %>% 
+        dplyr::select(song_name, name, UID) %>% 
+        filter(tolower(artistString) == tolower(name)) %>% 
+        filter(tolower(songString)== tolower(song_name))
+>>>>>>> fd1db4fd2e1147033b8ab7b706509c037a5f6fb7
         
     return(UIDS)
 }
@@ -63,16 +83,26 @@ getUIDS <- function(scrobbleDF){
         # ungroup
     
     makeUnique <- makeUnique %>% 
+<<<<<<< HEAD
         dplyr::mutate(UID = getTrackUID(song_title, artist)) 
     
+=======
+        dplyr::mutate(UID = map(X, getTrackUID)) #%>% 
+        unnest(cols = c(X, UID)) 
+>>>>>>> fd1db4fd2e1147033b8ab7b706509c037a5f6fb7
     print("so close")
     scrobbleDF <- left_join(scrobbleDF, makeUnique, by = c("song_title" = "song_title", "artist" = "artist"))
     
     return(scrobbleDF)
 }
 
+<<<<<<< HEAD
 
 
+
+=======
+access_token <- get_spotify_access_token()
+>>>>>>> fd1db4fd2e1147033b8ab7b706509c037a5f6fb7
 
 
 # Define UI for application that draws a histogram
@@ -112,7 +142,7 @@ server <- function(input, output) {
             saveRDS(users, "./user-dat/users.csv")
         }else{
             last_scrobble <- read_rds(str_c("./user-dat/", username, ".csv"))
-            my_scrobble <- update_scrobbles(last_scrobble,
+            scrobble_UID <- update_scrobbles(last_scrobble,
                              "date_unix",
                              username,
                              key) %>% 
