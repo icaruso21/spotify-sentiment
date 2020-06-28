@@ -1,44 +1,70 @@
-library(shiny)
+library(shiny) 
 library(spotifyr)
 library(scrobbler)
 library(tidyverse)
 
 users <- read_rds("./user-dat/users.csv")
 
-# username <- "noah14noah"
+#Sys.setenv(SPOTIFY_CLIENT_ID = 'xxxxxxxxxxxxxxxxxxxxx')
+#Sys.setenv(SPOTIFY_CLIENT_SECRET = 'xxxxxxxxxxxxxxxxxxxxx')
+
+access_token <- get_spotify_access_token()
+
+#username <- "***************"
 # 
-# my_scrobble <- download_scrobbles(username = username, api_key = "aa4c53e580021591d56faac7166c2e86")
+ #my_scrobble <- download_scrobbles(username = username, api_key = "*****************")
 # 
 # saveRDS(my_scrobble, str_c("./user-dat/", username, ".csv"))
 
-getTrackUID <- function(songInfo){
-    print(songInfo)
-    songString <- songInfo$song_title
-    artistString <- songInfo$artist
+getTrackUID <- function(song_title, artist){
+    glimpse(song_title)
+    glimpse(artist)
+    # songString <- songInfo$song_title
+    # artistString <- songInfo$artist
     #print(str_c(song_title, artist))
-    theTrack <- as.data.frame(search_spotify(songString, type = "track")) %>% 
-        dplyr::select(artists, id, name) %>% 
-        rename(UID = id, song_name = name) %>% 
-        unchop(cols = artists) #%>% 
-        dplyr::select(song_name, name, UID) #%>% 
-        filter(tolower(artistString) == tolower(name)) %>% 
-        filter(tolower(songString)== tolower(song_name))
+    UIDS <- c()
+    
+    for(i in seq.int(1, length(song_title))){
+        # print(i)
+        # print(song_title[i])
+        # print(artist[i])
+        a_UID <- search_spotify(song_title[i], type = "track") %>% 
+            dplyr::select(artists, id, name) %>% 
+            rename(UID = id, song_name = name) %>% 
+            unnest(cols = artists) %>% 
+            dplyr::select(song_name, name, UID) %>% 
+            filter(str_replace(tolower(artist[i]), " & ", " and ") == str_replace(tolower(name), " & ", " and ")) %>% 
+            filter(str_replace(tolower(song_title[i]), " & ", " and ") == str_replace(tolower(song_name), " & ", " and "))
+        UIDS <- append(UIDS, a_UID$UID[1])
+        #print(UIDS)
+    }
+
+    
+    # theTrack <- as.data.frame(search_spotify("Hello", type = "track")) %>% 
+    #     dplyr::select(artists, id, name) %>% 
+    #     rename(UID = id, song_name = name) %>% 
+    #     unnest(cols = artists) %>% 
+    #     dplyr::select(song_name, name, UID) %>% 
+    #     filter(tolower(artist[i]) == tolower(name)) %>% 
+    #     filter(tolower(song_title[i])== tolower(song_name))
         
-    return(theTrack$UID[1])
+    return(UIDS)
 }
 
 getUIDS <- function(scrobbleDF){
     makeUnique <- scrobbleDF %>% 
         dplyr::select(song_title, artist) 
     
-    makeUnique <- unique(makeUnique) %>%
-        rowwise %>%
-        do(X = as_tibble(.) ) %>%
-        ungroup
+    
+    #Remove duplicate songs and convert each row to dataframe
+    makeUnique <- unique(makeUnique) #%>%
+        # rowwise %>%
+        # do(X = as_tibble(.) ) %>%
+        # ungroup
     
     makeUnique <- makeUnique %>% 
-        dplyr::mutate(UID = map(X, getTrackUID)) %>% 
-        unnest(cols = c(X, UID)) 
+        dplyr::mutate(UID = getTrackUID(song_title, artist)) 
+    
     print("so close")
     scrobbleDF <- left_join(scrobbleDF, makeUnique, by = c("song_title" = "song_title", "artist" = "artist"))
     
@@ -48,22 +74,16 @@ getUIDS <- function(scrobbleDF){
 
 
 
-access_token <- get_spotify_access_token()
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("Spotify Sentiment Analysis"),
 
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30),
             textInput("username",
                       "Enter username:"),
             passwordInput("key",
@@ -74,7 +94,7 @@ ui <- fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
+          # plotOutput("distPlot")
         )
     )
 )
@@ -101,14 +121,14 @@ server <- function(input, output) {
         saveRDS(scrobble_UID, str_c("./user-dat/", username, ".csv"))
     })
     
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    })
+    # output$distPlot <- renderPlot({
+    #     # generate bins based on input$bins from ui.R
+    #     x    <- faithful[, 2]
+    #     bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    # 
+    #     # draw the histogram with the specified number of bins
+    #     hist(x, breaks = bins, col = 'darkgray', border = 'white')
+    # })
 }
 
 # Run the application
