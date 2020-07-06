@@ -3,7 +3,7 @@ library(shiny)
 =======
 devtools::install_github("charlie86/spotifyr")
 library(shiny)
->>>>>>> fd1db4fd2e1147033b8ab7b706509c037a5f6fb7
+>>>>>>> 
 library(spotifyr)
 library(scrobbler)
 library(tidyverse)
@@ -22,7 +22,7 @@ access_token <- get_spotify_access_token()
  #my_scrobble <- download_scrobbles(username = username, api_key = "*****************")
 =======
 # my_scrobble <- download_scrobbles(username = username, api_key = "*************************")
->>>>>>> fd1db4fd2e1147033b8ab7b706509c037a5f6fb7
+>>>>>>> 
 # 
 # saveRDS(my_scrobble, str_c("./user-dat/", username, ".csv"))
 
